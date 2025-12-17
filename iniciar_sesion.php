@@ -38,6 +38,31 @@ if ($_POST) {
                 // Cargar permisos del rol
                 cargarPermisos($_SESSION["id_rol"]);
 
+              // ===== REGISTRAR SESIÓN =====
+              $nombre_dispositivo = trim($_POST["nombre_dispositivo"] ?? '');
+              $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
+              $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+
+              $token = bin2hex(random_bytes(32));
+              $token_hash = hash('sha256', $token);
+
+              $sqlSesion = "INSERT INTO sesion_usuario
+                            (id_usuario, token_hash, ip, user_agent, creado_en)
+                            VALUES (?, ?, ?, ?, NOW())";
+
+              $stmtSesion = mysqli_prepare($conexion, $sqlSesion);
+              mysqli_stmt_bind_param(
+                  $stmtSesion,
+                  "issss",
+                  $_SESSION["id_usuario"],
+                  $token_hash,
+                  $ip,
+                  $user_agent,
+              );
+              mysqli_stmt_execute($stmtSesion);
+              // ============================
+
+
                 header("Location: index.php");
                 exit;
             }
